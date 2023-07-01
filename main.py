@@ -19,7 +19,7 @@ X, y = vertical_data(samples=100, classes=3)
 
 dense1 = Layer_Dense(2, 3) # Input, Output
 activation1 = Activation_ReLu()
-dense2 = Layer_Dense(3, 2)
+dense2 = Layer_Dense(3, 3)
 activation2 = Activation_Softmax()
 
 loss_function = Loss_CategoricalCrossentropy()
@@ -34,10 +34,10 @@ best_dense2_biases = dense2.biases.copy()
 
 # Try options randomly
 for iteration in range(10000):
-    dense1.weights = 0.05 * np.random.randn(2, 3)
-    dense1.biases = 0.05 * np.random.randn(1, 3)
-    dense2.weights = 0.05 * np.random.randn(3, 3)
-    dense2.biases = 0.05 * np.random.randn(1, 3)
+    dense1.weights += 0.05 * np.random.randn(2, 3)
+    dense1.biases += 0.05 * np.random.randn(1, 3)
+    dense2.weights += 0.05 * np.random.randn(3, 3)
+    dense2.biases += 0.05 * np.random.randn(1, 3)
 
     # Traning dat throw layer
     dense1.forward(X)
@@ -60,4 +60,9 @@ for iteration in range(10000):
         best_dense2_biases = dense2.biases.copy()
 
         lowest_loss = loss
+    else:
+        dense1.weights = best_dense1_weights.copy()
+        dense1.biases = best_dense1_biases.copy()
+        dense2.weights = best_dense2_weights.copy()
+        dense2.biases = best_dense2_biases.copy()
 

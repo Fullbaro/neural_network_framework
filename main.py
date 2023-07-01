@@ -10,26 +10,34 @@ from losses import *
 
 nnfs.init()
 
+X, y = spiral_data(samples=100, classes=3)
+
+dense1 = Layer_Dense(2, 3) # Input, Output
+activation1 = Activation_ReLu()
+dense2 = Layer_Dense(3, 3)
+loss_activation = Activation_Softmax_Loss_CategoricalCrossentropy()
+
+dense1.forward(X)
+activation1.forward(dense1.output)
+dense2.forward(activation1.output)
+loss = loss_activation.forward(dense2.output, y)
+
+print(loss_activation.output[:5])
+print(loss)
+
+predictions = np.argmax(loss_activation.output, axis=1)
+if len(y.shape) == 2:
+    y = np.argmax(y, axis=1)
+accuray = np.mean(predictions==y)
+print(accuray)
 
 
-softmax_outputs = np.array([[0.7, 0.1, 0.2],
-[0.1, 0.5, 0.4],
-[0.02, 0.9, 0.08]])
+loss_activation.backward(loss_activation.output, y)
+dense2.backward(loss_activation.dinputs)
+activation1.backward(dense2.dinputs)
+dense1.backward(activation1.dinputs)
 
-class_targets = np.array([0, 1, 1])
-
-softmax_loss = Activation_Softmax_Loss_CategoricalCrossentropy()
-softmax_loss.backward(softmax_outputs, class_targets)
-dvalues1 = softmax_loss.dinputs
-
-activation = Activation_Softmax()
-activation.output = softmax_outputs
-loss = Loss_CategoricalCrossentropy()
-loss.backward(softmax_outputs, class_targets)
-activation.backward(loss.dinputs)
-dvalues2 = activation.dinputs
-
-print('Gradients: combined loss and activation:')
-print(dvalues1)
-print('Gradients: separate loss and activation:')
-print(dvalues2)
+print(dense1.dweights)
+print(dense1.dbiases)
+print(dense2.dweights)
+print(dense2.dbiases)

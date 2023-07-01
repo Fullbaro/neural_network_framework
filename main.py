@@ -13,3 +13,12 @@ biases = [2, 3, 0.5]
 layer_outputs = np.dot(weights, inputs) + biases
 
 print(layer_outputs)
+
+
+a = [1, 2, 3]
+
+b = np.array([a])
+# ! OR
+c = np.expand_dims(a, axis=0) # Transpose. Row to Column
+
+print(b, "=", c)

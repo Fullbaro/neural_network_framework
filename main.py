@@ -12,58 +12,24 @@ nnfs.init()
 
 
 
+softmax_outputs = np.array([[0.7, 0.1, 0.2],
+[0.1, 0.5, 0.4],
+[0.02, 0.9, 0.08]])
 
-#X, y = vertical_data(samples=100, classes=3)
-X, y = spiral_data(samples=100, classes=3)
-# plt.scatter(X[:,0], X[:,1], c=y, cmap="brg")
-# plt.show()
+class_targets = np.array([0, 1, 1])
 
-dense1 = Layer_Dense(2, 3) # Input, Output
-activation1 = Activation_ReLu()
-dense2 = Layer_Dense(3, 3)
-activation2 = Activation_Softmax()
+softmax_loss = Activation_Softmax_Loss_CategoricalCrossentropy()
+softmax_loss.backward(softmax_outputs, class_targets)
+dvalues1 = softmax_loss.dinputs
 
-loss_function = Loss_CategoricalCrossentropy()
+activation = Activation_Softmax()
+activation.output = softmax_outputs
+loss = Loss_CategoricalCrossentropy()
+loss.backward(softmax_outputs, class_targets)
+activation.backward(loss.dinputs)
+dvalues2 = activation.dinputs
 
-# Save values
-lowest_loss = 9999999
-best_dense1_weights = dense1.weights.copy()
-best_dense1_biases = dense1.biases.copy()
-best_dense2_weights = dense2.weights.copy()
-best_dense2_biases = dense2.biases.copy()
-
-
-# Try options randomly
-for iteration in range(10000):
-    dense1.weights += 0.05 * np.random.randn(2, 3)
-    dense1.biases += 0.05 * np.random.randn(1, 3)
-    dense2.weights += 0.05 * np.random.randn(3, 3)
-    dense2.biases += 0.05 * np.random.randn(1, 3)
-
-    # Traning dat throw layer
-    dense1.forward(X)
-    activation1.forward(dense1.output)
-    dense2.forward(activation1.output)
-    activation2.forward(dense2.output)
-
-    # Calculate loss
-    loss = loss_function.calculate(activation2.output, y)
-
-    # Calculate accuracy
-    predictions = np.argmax(activation2.output, axis=1)
-    accuray = np.mean(predictions == y)
-
-    if loss < lowest_loss:
-        print(f"Network improved. Accuracy: {accuray}, Loss: {loss}")
-        best_dense1_weights = dense1.weights.copy()
-        best_dense1_biases = dense1.biases.copy()
-        best_dense2_weights = dense2.weights.copy()
-        best_dense2_biases = dense2.biases.copy()
-
-        lowest_loss = loss
-    else:
-        dense1.weights = best_dense1_weights.copy()
-        dense1.biases = best_dense1_biases.copy()
-        dense2.weights = best_dense2_weights.copy()
-        dense2.biases = best_dense2_biases.copy()
-
+print('Gradients: combined loss and activation:')
+print(dvalues1)
+print('Gradients: separate loss and activation:')
+print(dvalues2)

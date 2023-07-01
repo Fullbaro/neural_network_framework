@@ -14,7 +14,6 @@ weights = [
 
 biases = [2, 3, 0.5]
 
-outputs = np.dot(inputs, np.array(weights).T) + biases
-outputs = np.dot(inputs, np.array(weights).T)
+layer_putptus = np.dot(inputs, np.array(weights).T) + biases
 
-print(outputs)
+print(layer_putptus)

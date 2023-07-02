@@ -17,7 +17,8 @@ dense1 = Layer_Dense(2, 64) # Input, Output
 activation1 = Activation_ReLu()
 dense2 = Layer_Dense(64, 3)
 loss_activation = Activation_Softmax_Loss_CategoricalCrossentropy()
-optimizer = Optimizer_SGD(learning_rate=1, decay=0.001, momentum=0.9)
+#optimizer = Optimizer_SGD(learning_rate=1, decay=0.001, momentum=0.9)
+optimizer = Optimizer_Adagrad(decay=1e-4)
 
 
 for epoch in range(10_001):

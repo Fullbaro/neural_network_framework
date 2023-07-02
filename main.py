@@ -15,22 +15,24 @@ nnfs.init()
 X, y = spiral_data(samples=100, classes=3)
 X_test, y_test = spiral_data(samples=100, classes=3)
 
-dense1 = Layer_Dense(2, 64, weight_regularizer_l2=5e-4, bias_regularizer_l2=5e-4) # Input, Output
+dense1 = Layer_Dense(2, 128, weight_regularizer_l2=5e-4, bias_regularizer_l2=5e-4) # Input, Output
 activation1 = Activation_ReLu()
-dense2 = Layer_Dense(64, 3)
+dropout1 = Layer_Dropout(0.1)
+dense2 = Layer_Dense(128, 3)
 loss_activation = Activation_Softmax_Loss_CategoricalCrossentropy()
 
 #optimizer = Optimizer_SGD(learning_rate=1, decay=0.001, momentum=0.9)
 #optimizer = Optimizer_Adagrad(decay=1e-4)
 #optimizer = Optimizer_RMSprop(learning_rate=0.02, decay=1e-4, rho=0.999)
-optimizer = Optimizer_Adam(learning_rate=0.02, decay=5e-7)
+optimizer = Optimizer_Adam(learning_rate=0.05, decay=5e-5)
 
 
 for epoch in range(10_001):
 
     dense1.forward(X)
     activation1.forward(dense1.output)
-    dense2.forward(activation1.output)
+    dropout1.forward(activation1.output)
+    dense2.forward(dropout1.output)
     data_loss = loss_activation.forward(dense2.output, y)
 
     regularization_loss = loss_activation.loss.regularization_loss(dense1) + \
@@ -48,7 +50,8 @@ for epoch in range(10_001):
 
     loss_activation.backward(loss_activation.output, y)
     dense2.backward(loss_activation.dinputs)
-    activation1.backward(dense2.dinputs)
+    dropout1.backward(dense2.dinputs)
+    activation1.backward(dropout1.dinputs)
     dense1.backward(activation1.dinputs)
 
     optimizer.pre_update_params()
@@ -57,13 +60,9 @@ for epoch in range(10_001):
     optimizer.post_update_params()
 
 
-print("TRAINING DONE")
-time.sleep(10)
-
-
 # Validation
 
-X_test, y_test = spiral_data(samples=100, classes=3)
+X_test, y_test = spiral_data(samples=1000, classes=3)
 # Perform a forward pass of our testing data through this layer
 dense1.forward(X_test)
 # Perform a forward pass through activation function

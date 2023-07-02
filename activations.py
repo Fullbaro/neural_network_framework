@@ -14,11 +14,8 @@ class Activation_ReLu:
 class Activation_Softmax:
 
     def forward(self, inputs):
-        # Exponentiate
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True)) #* Kivonás hogy lehogy elszálljon az érték
-        # Normalize
         probalities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
-
         self.output = probalities
 
     def backward(self, dvalues):

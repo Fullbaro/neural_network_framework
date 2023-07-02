@@ -1,7 +1,8 @@
 # Custom
 
 DEVNOTES.md
-
+*.zip
+/fashion_mnist_images
 
 
 # Byte-compiled / optimized / DLL files

@@ -6,7 +6,19 @@ class Accuracy:
         comparisons = self.compare(predictions, y)
         accuracy = np.mean(comparisons)
 
+        self.accumulated_sum += np.sum(comparisons)
+        self.accumulated_count += len(comparisons)
+
         return accuracy
+
+    def calculate_accumulated(self):
+        accuracy = self.accumulated_sum / self.accumulated_count
+
+        return accuracy
+
+    def new_pass(self):
+        self.accumulated_sum = 0
+        self.accumulated_count = 0
 
 class Accuracy_Regression(Accuracy):
 
@@ -59,10 +71,25 @@ class Loss:
         sample_losses = self.forward(output, y)
         data_loss = np.mean(sample_losses)
 
+        self.accumulated_sum += np.sum(sample_losses)
+        self.accumulated_count += len(sample_losses)
+
         if not include_regularization:
             return data_loss
 
         return data_loss, self.regularization_loss()
+
+    def calculate_accumulated(self, *, include_regularization=False):
+        data_loss = self.accumulated_sum / self.accumulated_count
+
+        if not include_regularization:
+            return data_loss
+
+        return data_loss, self.regularization_loss()
+
+    def new_pass(self):
+        self.accumulated_sum = 0
+        self.accumulated_count = 0
 
 
 class Loss_CategoricalCrossentropy(Loss):

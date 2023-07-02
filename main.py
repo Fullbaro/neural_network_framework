@@ -17,10 +17,10 @@ dense1 = Layer_Dense(2, 64) # Input, Output
 activation1 = Activation_ReLu()
 dense2 = Layer_Dense(64, 3)
 loss_activation = Activation_Softmax_Loss_CategoricalCrossentropy()
-optimizer = Optimizer_SGD(learning_rate=0.85)
+optimizer = Optimizer_SGD(decay=0.001)
 
 
-for epoch in range(10_000):
+for epoch in range(10_001):
 
     dense1.forward(X)
     activation1.forward(dense1.output)
@@ -45,5 +45,7 @@ for epoch in range(10_000):
     activation1.backward(dense2.dinputs)
     dense1.backward(activation1.dinputs)
 
+    optimizer.pre_update_params()
     optimizer.update_params(dense1)
     optimizer.update_params(dense2)
+    optimizer.post_update_params()

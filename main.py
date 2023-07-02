@@ -17,7 +17,7 @@ dense1 = Layer_Dense(2, 64) # Input, Output
 activation1 = Activation_ReLu()
 dense2 = Layer_Dense(64, 3)
 loss_activation = Activation_Softmax_Loss_CategoricalCrossentropy()
-optimizer = Optimizer_SGD(decay=0.001)
+optimizer = Optimizer_SGD(learning_rate=1, decay=0.001, momentum=0.9)
 
 
 for epoch in range(10_001):
@@ -37,7 +37,7 @@ for epoch in range(10_001):
     #print(accuray)
 
     if not epoch % 100:
-        print(f"Epoch: {epoch}, Accuracy: {accuray}, Loss: {loss}")
+        print(f"Epoch: {epoch}, Accuracy: {accuray}, Loss: {loss}, Learning rate: {optimizer.current_learning_rate}")
 
 
     loss_activation.backward(loss_activation.output, y)

@@ -45,8 +45,7 @@ class Model:
             output = self.forward(batch_X, training=False)
             self.loss.calculate(output, batch_y)
 
-            predictions = self.output_layer_activation.predictions(
-            output)
+            predictions = self.output_layer_activation.predictions(output)
             self.accuracy.calculate(predictions, batch_y)
 
         validation_loss = self.loss.calculate_accumulated()

@@ -1,9 +1,14 @@
 # Custom
 
-DEVNOTES.md
 *.zip
 *.m
 *.png
+*.jpg
+*test*
+
+/fashion_mnist_images
+DEVNOTES.md
+
 
 
 # Byte-compiled / optimized / DLL files

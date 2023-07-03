@@ -11,21 +11,25 @@ class ImageClassificationDataset:
         self.X: np.array
         self.y: np.array
 
-    def load(self, path):
+    def load(self, path, size):
         self.path = path
+        self.size = size
         self.labels = np.array(os.listdir(self.path))
 
         X_list = []
         y_list = []
         for label in self.labels:
             for file in os.listdir(os.path.join(self.path, label)):
-                X_list.append(cv2.imread(os.path.join(self.path, label, file), cv2.IMREAD_UNCHANGED))
+                img = cv2.imread(os.path.join(self.path, label, file), cv2.IMREAD_GRAYSCALE)
+                img = cv2.resize(img, (size, size))
+
+                X_list.append(img)
                 y_list.append(label)
 
         self.X = np.array(X_list)
         self.y = np.array(y_list).astype('uint8')
 
-    def preprocess(self, grayscale=False, white_balance=False, *, size):
+    def preprocess(self, grayscale=False, white_balance=False):
         for i in range(len(self.X)):
             img = self.X[i]
 
@@ -40,13 +44,12 @@ class ImageClassificationDataset:
             if grayscale and len(img.shape) == 3:
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-            if size is not None:
-                self.size = size
-                img = cv2.resize(img, (size, size))
-
             self.X[i] = img
 
     def augment(self):
+        pass
+
+    def balance(self):
         pass
 
     def shuffle(self):
@@ -60,6 +63,9 @@ class ImageClassificationDataset:
 
     def reshape(self):
         self.X = self.X.reshape(self.X.shape[0], -1)
+
+        # if len(self.labels) == 2:
+        #     self.y = self.y.reshape(-1, 1)
 
     def split(self, valid=0.2, test=0.1):
         dataset_size = self.X.shape[0]
@@ -88,10 +94,7 @@ class ImageClassificationDataset:
         for i, ax in enumerate(axs.flat):
             img = self.X[i].reshape((self.size, self.size))
 
-            if len(img.shape) == 2:
-                ax.imshow(img, cmap='gray')
-            else:
-                ax.imshow(img)
+            ax.imshow(img, cmap='gray')
             ax.set_title(self.y[i])
             ax.axis('off')
 

@@ -1,3 +1,5 @@
+import copy
+import pickle
 from layers import *
 from activations import *
 
@@ -10,10 +12,51 @@ class Model:
     def add(self, layer):
         self.layers.append(layer)
 
-    def set(self, *, loss, optimizer, accuracy):
-        self.loss = loss
-        self.optimizer = optimizer
-        self.accuracy = accuracy
+    def set(self, *, loss=None, optimizer=None, accuracy=None):
+        if loss is not None:
+            self.loss = loss
+        if optimizer is not None:
+            self.optimizer = optimizer
+        if accuracy is not None:
+            self.accuracy = accuracy
+
+    def evaluate(self, X_val, y_val, *, batch_size=None):
+        validation_steps = 1
+
+        if batch_size is not None:
+            validation_steps = len(X_val) // batch_size
+
+            if validation_steps * batch_size < len(X_val):
+                validation_steps += 1
+
+        self.loss.new_pass()
+        self.accuracy.new_pass()
+
+        for step in range(validation_steps):
+
+            if batch_size is None:
+                batch_X = X_val
+                batch_y = y_val
+            else:
+                batch_X = X_val[step*batch_size:(step+1)*batch_size]
+                batch_y = y_val[step*batch_size:(step+1)*batch_size]
+
+            output = self.forward(batch_X, training=False)
+            self.loss.calculate(output, batch_y)
+
+            predictions = self.output_layer_activation.predictions(
+            output)
+            self.accuracy.calculate(predictions, batch_y)
+
+        validation_loss = self.loss.calculate_accumulated()
+        validation_accuracy = self.accuracy.calculate_accumulated()
+
+        print(f'Evaluation, ' +
+            f'acc: {validation_accuracy:.3f}, ' +
+            f'loss: {validation_loss:.3f}'
+        )
+
+
 
     def train(self, X, y, *, epochs=1, batch_size=None, print_every=1, validation_data=None):
         self.accuracy.init(y)
@@ -132,7 +175,8 @@ class Model:
             if hasattr(self.layers[i], 'weights'):
                 self.trainable_layers.append(self.layers[i])
 
-            self.loss.remember_trainable_layers(self.trainable_layers)
+            if self.loss is not None:
+                self.loss.remember_trainable_layers(self.trainable_layers)
 
         if isinstance(self.layers[-1], Activation_Softmax) and isinstance(self.loss, Loss_CategoricalCrossentropy):
             self.softmax_classifier_output = Activation_Softmax_Loss_CategoricalCrossentropy()
@@ -159,3 +203,45 @@ class Model:
 
         for layer in reversed(self.layers):
             layer.backward(layer.next.dinputs)
+
+    def get_parameters(self):
+        parameters = []
+        for layer in self.trainable_layers:
+            parameters.append(layer.get_parameters())
+
+        return parameters
+
+    def set_parameters(self,parameters):
+        for parameter_set, layer in zip(parameters, self.trainable_layers):
+            layer.set_parameters(*parameter_set)
+
+    def save_parameters(self, path):
+        with open(path, 'wb') as file:
+            pickle.dump(self.get_parameters(), file)
+
+    def load_parameters(self, path):
+        with open(path, 'rb') as file:
+            self.set_parameters(pickle.load(file))
+
+    def save(self, path):
+        model = copy.deepcopy(self)
+
+        model.loss.new_pass()
+        model.accuracy.new_pass()
+
+        model.input_layer.__dict__.pop("output", None)
+        model.loss.__dict__.pop('dinputs', None)
+
+        for layer in model.layers:
+            for property in ['inputs', 'output', 'dinputs', 'dweights', 'dbiases']:
+                layer.__dict__.pop(property, None)
+
+        with open(path, 'wb') as file:
+            pickle.dump(model, file)
+
+    @staticmethod
+    def load(path):
+        with open(path, 'rb') as file:
+            model = pickle.load(file)
+
+        return model

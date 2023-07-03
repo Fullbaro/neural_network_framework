@@ -35,7 +35,6 @@ class Optimizer_SGD:
         self.iterations += 1
 
 
-
 class Optimizer_Adagrad:
 
     def __init__(self, learning_rate=1.0, decay=0.0, epsilon=1e-7):
@@ -64,7 +63,6 @@ class Optimizer_Adagrad:
         self.iterations += 1
 
 
-# RMSprop optimizer
 class Optimizer_RMSprop:
 
     def __init__(self,learning_rate=0.001, decay=0.0, epsilon=1e-7, rho=0.9):
@@ -92,7 +90,6 @@ class Optimizer_RMSprop:
 
     def post_update_params(self):
         self.iterations += 1
-
 
 
 class Optimizer_Adam:

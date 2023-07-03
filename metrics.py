@@ -138,8 +138,8 @@ class Loss_BinaryCrossentropy(Loss):
         self.dinputs = -(y_true / clipped_dvalues - (1 - y_true) / (1 - clipped_dvalues)) / outputs
         self.dinputs = self.dinputs / samples
 
-# For regression
 
+# For regression
 class Loss_MeanSquaredError(Loss):
 
     def forward(self, y_pred, y_true):

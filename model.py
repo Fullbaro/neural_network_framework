@@ -56,8 +56,6 @@ class Model:
             f'loss: {validation_loss:.3f}'
         )
 
-
-
     def train(self, X, y, *, epochs=1, batch_size=None, print_every=1, validation_data=None):
         self.accuracy.init(y)
 
@@ -153,7 +151,6 @@ class Model:
                     f'loss: {validation_loss:.3f}' +
                     '\n'
                 )
-
 
     def finalize(self):
         self.input_layer = Layer_Input()
@@ -266,4 +263,7 @@ class Model:
 
             output.append(bacth_output)
 
-        return np.vstack(output)
+        confidences =  np.vstack(output)
+        predictions = self.output_layer_activation.predictions(confidences)
+
+        return predictions

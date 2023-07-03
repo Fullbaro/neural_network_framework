@@ -11,7 +11,7 @@ class ImageClassificationDataset:
         self.X: np.array
         self.y: np.array
 
-    def load(self, path, size):
+    def load(self, path, size, binary=False):
         self.path = path
         self.size = size
         self.labels = np.array(os.listdir(self.path))
@@ -29,20 +29,15 @@ class ImageClassificationDataset:
         self.X = np.array(X_list)
         self.y = np.array(y_list).astype('uint8')
 
-    def preprocess(self, grayscale=False, white_balance=False):
+        if binary:
+            self.y = self.y.reshape(-1, 1) # Now classes are binary
+
+    def preprocess(self, white_balance=False):
         for i in range(len(self.X)):
             img = self.X[i]
 
-            if white_balance and len(img.shape) == 3:
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-                avg_a = np.average(img[:, :, 1])
-                avg_b = np.average(img[:, :, 2])
-                img[:, :, 1] = img[:, :, 1] - ((avg_a - 128) * (img[:, :, 0] / 255.0) * 1.1)
-                img[:, :, 2] = img[:, :, 2] - ((avg_b - 128) * (img[:, :, 0] / 255.0) * 1.1)
-                img = cv2.cvtColor(img, cv2.COLOR_LAB2BGR)
-
-            if grayscale and len(img.shape) == 3:
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            if white_balance:
+                img = cv2.equalizeHist(img)
 
             self.X[i] = img
 
@@ -63,9 +58,6 @@ class ImageClassificationDataset:
 
     def reshape(self):
         self.X = self.X.reshape(self.X.shape[0], -1)
-
-        # if len(self.labels) == 2:
-        #     self.y = self.y.reshape(-1, 1)
 
     def split(self, valid=0.2, test=0.1):
         dataset_size = self.X.shape[0]

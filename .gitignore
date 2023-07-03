@@ -5,6 +5,7 @@
 *.png
 *.jpg
 *test*
+*TEST*
 
 /fashion_mnist_images
 DEVNOTES.md

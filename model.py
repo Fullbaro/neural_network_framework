@@ -245,3 +245,25 @@ class Model:
             model = pickle.load(file)
 
         return model
+
+    def predict(self, X, *, bacth_size=None):
+        predictions_steps = 1
+
+        if bacth_size is not None:
+            predictions_steps = len(X) // bacth_size
+
+            if predictions_steps * bacth_size < len(X):
+                predictions_steps += 1
+
+        output = []
+        for step in range(predictions_steps):
+            if bacth_size is None:
+                bacth_X = X
+            else:
+                bacth_X = X[step * bacth_size:(step + 1) * bacth_size]
+
+            bacth_output = self.forward(bacth_X, training=False)
+
+            output.append(bacth_output)
+
+        return np.vstack(output)

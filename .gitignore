@@ -3,6 +3,8 @@
 DEVNOTES.md
 *.zip
 /fashion_mnist_images
+*.m
+*.png
 
 
 # Byte-compiled / optimized / DLL files

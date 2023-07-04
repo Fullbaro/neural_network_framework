@@ -1,10 +1,13 @@
 import copy
 import pickle
+
 from lib.layers import *
 from lib.activations import *
 from lib.metrics import *
+from lib.visualizers import ModelVisualizer
+from lib.callbacks import *
 
-class Model:
+class Model(ModelVisualizer):
 
     def __init__(self):
         self.layers = []
@@ -51,13 +54,28 @@ class Model:
         validation_loss = self.loss.calculate_accumulated()
         validation_accuracy = self.accuracy.calculate_accumulated()
 
-        print(f'Evaluation, ' +
-            f'acc: {validation_accuracy:.3f}, ' +
+        print(f'Evaluation: ' +
+            f'accuracy: {validation_accuracy:.3f}, ' +
             f'loss: {validation_loss:.3f}'
         )
 
-    def train(self, X, y, *, epochs=1, batch_size=None, print_every=1, validation_data=None):
+    def train(self, X, y, *, epochs=1, early_stop=None, batch_size=None, validation_data=None):
         self.accuracy.init(y)
+
+        self.history = {
+            "train": {
+                "acc": [],
+                "loss": [],
+                "lr": [],
+                "dl": [],
+                "rl": []
+
+            },
+            "valid": {
+                "acc": [],
+                "loss": []
+            }
+        }
 
         train_steps = 1
 
@@ -75,10 +93,10 @@ class Model:
                 if validation_steps * batch_size < len(X_val):
                     validation_steps += 1
 
+        if early_stop is not None:
+            early_stopping = EarlyStoppingCallback(patience=5)
 
         for epoch in range(1, epochs+1):
-            print(f'epoch: {epoch}')
-
             self.loss.new_pass()
             self.accuracy.new_pass()
 
@@ -104,24 +122,34 @@ class Model:
                     self.optimizer.update_params(layer)
                 self.optimizer.post_update_params()
 
-                if not step % print_every or step == train_steps - 1:
-                    print(f'    step: {step}, ' +
-                    f'acc: {accuracy:.3f}, ' +
-                    f'loss: {loss:.3f} (' +
-                    f'data_loss: {data_loss:.3f},' +
-                    f'reg_loss: {regularization_loss:.3f}), ' +
-                    f'lr: {self.optimizer.current_learning_rate}')
+                if not step % int(train_steps * 0.05) or step == train_steps - 1:
+                    print(
+                        f"Epoch({epoch}/{epochs}) {round(step / train_steps * 100)}%, " +
+                        f"Training: accuracy: {accuracy:.3f}, " +
+                        f"loss: {loss:.3f}, " +
+                        f"learning rate: {self.optimizer.current_learning_rate:.15f}, " +
+                        f"data loss: {data_loss:.3f}, " +
+                        f"regularization loss: {regularization_loss:.3f}"
+                        ,end="\r"
+                    )
 
             epoch_data_loss, epoch_regularization_loss = self.loss.calculate_accumulated(include_regularization=True)
             epoch_loss = epoch_data_loss + epoch_regularization_loss
             epoch_accuracy = self.accuracy.calculate_accumulated()
 
-            print(f'training, ' +
-                f'acc: {epoch_accuracy:.3f}, ' +
-                f'loss: {epoch_loss:.3f} (' +
-                f'data_loss: {epoch_data_loss:.3f}, ' +
-                f'reg_loss: {epoch_regularization_loss:.3f}), ' +
-                f'lr: {self.optimizer.current_learning_rate}')
+            self.history["train"]["acc"].append(epoch_accuracy)
+            self.history["train"]["loss"].append(epoch_loss)
+            self.history["train"]["lr"].append(self.optimizer.current_learning_rate)
+            self.history["train"]["dl"].append(epoch_data_loss)
+            self.history["train"]["rl"].append(epoch_regularization_loss)
+            print(
+                f"Epoch({epoch}/{epochs}), " +
+                f"Training:   accuracy: {epoch_accuracy:.3f}, " +
+                f"loss: {epoch_loss:.3f}, " +
+                f"learning rate: {self.optimizer.current_learning_rate:.15f}, " +
+                f"data loss: {epoch_data_loss:.3f}, " +
+                f"regularization loss: {epoch_regularization_loss:.3f}"
+            )
 
             if validation_data is not None:
                 self.loss.new_pass()
@@ -146,11 +174,18 @@ class Model:
                 validation_loss = self.loss.calculate_accumulated()
                 validation_accuracy = self.accuracy.calculate_accumulated()
 
-                print(f'validation, ' +
-                    f'acc: {validation_accuracy:.3f},' +
-                    f'loss: {validation_loss:.3f}' +
-                    '\n'
+                self.history["valid"]["acc"].append(validation_accuracy)
+                self.history["valid"]["loss"].append(validation_loss)
+                print(
+                    f"Epoch({epoch}/{epochs}), " +
+                    f"Validation: " +
+                    f"accuracy: {validation_accuracy:.3f}, " +
+                    f"loss: {validation_loss:.3f}" +
+                    "\n"
                 )
+
+            if early_stop is not None and early_stopping.on_epoch_end(epoch, validation_loss):
+                break
 
     def finalize(self):
         self.input_layer = Layer_Input()

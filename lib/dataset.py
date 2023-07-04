@@ -1,9 +1,10 @@
 import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
-class ImageClassificationDataset:
+from lib.visualizers import ImageDatasetVisualizer
+
+class ImageClassificationDataset(ImageDatasetVisualizer):
 
     def __init__(self):
         self.path: str
@@ -72,22 +73,8 @@ class ImageClassificationDataset:
         self.X_test = self.X[num_train + num_valid:num_train + num_valid + num_test]
         self.y_test = self.y[num_train + num_valid:num_train + num_valid + num_test]
 
-        return self.X_train, self.y_train, self.X_valid, self.y_valid, self.X_test, self.y_test
-
-
-    def preview(self):
         print(f"Train batch contains {len(self.X_train):_} images")
         print(f"Validation batch contains {len(self.X_valid):_} images")
         print(f"Test batch contains {len(self.X_test):_} images")
 
-        fig, axs = plt.subplots(5, 5, figsize=(10, 10))
-        fig.subplots_adjust(hspace=0.3, wspace=0)
-
-        for i, ax in enumerate(axs.flat):
-            img = self.X[i].reshape((self.size, self.size))
-
-            ax.imshow(img, cmap='gray')
-            ax.set_title(self.y[i])
-            ax.axis('off')
-
-        plt.show()
+        return self.X_train, self.y_train, self.X_valid, self.y_valid, self.X_test, self.y_test

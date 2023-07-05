@@ -1,1 +1,1 @@
-# cnn_from_scratch
+# nn_from_scratch

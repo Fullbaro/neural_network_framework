@@ -4,10 +4,13 @@
 *.m
 *.png
 *.jpg
+
 *test*
 *TEST*
 
-/fashion_mnist_images
+/binary_classification_dataset
+/classification_dataset
+
 DEVNOTES.md
 
 

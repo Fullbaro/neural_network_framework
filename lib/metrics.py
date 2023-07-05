@@ -4,10 +4,12 @@ class Accuracy:
 
     def calculate(self, predictions, y):
         comparisons = self.compare(predictions, y)
+
         accuracy = np.mean(comparisons)
 
         self.accumulated_sum += np.sum(comparisons)
         self.accumulated_count += len(comparisons)
+
 
         return accuracy
 
@@ -34,15 +36,16 @@ class Accuracy_Regression(Accuracy):
 
 class Accuracy_Categorical(Accuracy):
 
+    def __init__(self, *, binary=False):
+        self.binary = binary
+
     def init(self, y):
         pass
 
     def compare(self, predictions, y):
-        if len(y.shape) == 2:
+        if not self.binary and len(y.shape) == 2:
             y = np.argmax(y, axis=1)
         return predictions == y
-
-# ******** LOSS STUFF ********
 
 class Loss:
 
@@ -67,8 +70,10 @@ class Loss:
     def remember_trainable_layers(self, trainable_layers):
         self.trainable_layers = trainable_layers
 
+
     def calculate(self, output, y, *, include_regularization=False):
         sample_losses = self.forward(output, y)
+
         data_loss = np.mean(sample_losses)
 
         self.accumulated_sum += np.sum(sample_losses)
@@ -101,6 +106,7 @@ class Loss_CategoricalCrossentropy(Loss):
 
         if len(y_true.shape) == 1:
             correct_confidences = y_pred_clipped[range(samples), y_true]
+
         elif len(y_true.shape) == 2:
             correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
 
@@ -118,9 +124,11 @@ class Loss_CategoricalCrossentropy(Loss):
         self.dinputs = self.dinputs / samples
 
 
+
+
 class Loss_BinaryCrossentropy(Loss):
 
-    def forward(self,y_pred, y_true):
+    def forward(self, y_pred, y_true):
         y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
 
         sample_losses = -(y_true * np.log(y_pred_clipped) + (1 - y_true) * np.log(1 - y_pred_clipped))
@@ -130,7 +138,6 @@ class Loss_BinaryCrossentropy(Loss):
 
     def backward(self, dvalues, y_true):
         samples = len(dvalues)
-
         outputs = len(dvalues[0])
 
         clipped_dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
@@ -139,13 +146,13 @@ class Loss_BinaryCrossentropy(Loss):
         self.dinputs = self.dinputs / samples
 
 
-# For regression
 class Loss_MeanSquaredError(Loss):
 
     def forward(self, y_pred, y_true):
         sample_losses = np.mean((y_true - y_pred)**2, axis=-1)
 
         return sample_losses
+
 
     def backward(self, dvalues, y_true):
         samples = len(dvalues)
@@ -154,10 +161,12 @@ class Loss_MeanSquaredError(Loss):
         self.dinputs = -2 * (y_true - dvalues) / outputs
         self.dinputs = self.dinputs / samples
 
+
 class Loss_MeanAbsoluteError(Loss):
 
-    def forward(self,y_pred, y_true):
+    def forward(self, y_pred, y_true):
         sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
+
         return sample_losses
 
     def backward(self, dvalues, y_true):

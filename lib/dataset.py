@@ -33,11 +33,11 @@ class ImageClassificationDataset(ImageDatasetVisualizer):
         if binary:
             self.y = self.y.reshape(-1, 1) # Now classes are binary
 
-    def preprocess(self, white_balance=False):
+    def preprocess(self, auto_white_balance_and_contrast=False):
         for i in range(len(self.X)):
             img = self.X[i]
 
-            if white_balance:
+            if auto_white_balance_and_contrast:
                 img = cv2.equalizeHist(img)
 
             self.X[i] = img

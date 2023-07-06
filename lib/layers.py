@@ -64,3 +64,4 @@ class Layer_Dropout:
 
     def backward(self, dvalues):
         self.dinputs = dvalues * self.binary_mask
+

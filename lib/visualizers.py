@@ -20,7 +20,7 @@ class ModelVisualizer:
 
         x = list(range(1, len(y1) + 1))
 
-        fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+        fig, axs = plt.subplots(2, 2, figsize=(10, 8))
 
         axs[0, 0].plot(x, y1, label='Training')
         axs[0, 0].plot(x, y2, label='Validation')
@@ -75,7 +75,7 @@ class ImageDatasetVisualizer:
         limit = len(self.X_train) if len(self.X_train) < 2000 else 2000
 
         view = TSNE(n_components=2).fit_transform(self.X_train[:limit])
-        plt.figure(figsize=(20,10))
+        plt.figure(figsize=(10, 5))
         plt.scatter(view[:,0], view[:,1], c=self.y_train[:limit], alpha=0.5)
         plt.xlabel('t-SNE-1')
         plt.ylabel('t-SNE-2')

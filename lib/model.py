@@ -293,5 +293,4 @@ class Model(ModelVisualizer):
 
             output.append(batch_output)
 
-        confidences = np.vstack(output)
-        return self.output_layer_activation.predictions(confidences)
+        return np.vstack(output)

@@ -4,6 +4,7 @@
 *.m
 *.png
 *.jpg
+*.csv
 
 *test*
 *TEST*

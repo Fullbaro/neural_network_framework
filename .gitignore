@@ -2,6 +2,7 @@
 
 *.zip
 *.m
+*.p
 *.png
 *.jpg
 *.csv
